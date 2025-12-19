@@ -339,6 +339,7 @@ elif page == "Dijital Beyanname":
 <th style="border: 1px solid #004a99; padding: 5px;">Eşyanın Tanımı</th>
 <th style="border: 1px solid #004a99; padding: 5px;">GTİP</th>
 <th style="border: 1px solid #004a99; padding: 5px;">Miktar/Birim</th>
+<th style="border: 1px solid #004a99; padding: 5px;">Net/Brüt (KG)</th>
 <th style="border: 1px solid #004a99; padding: 5px;">Birim Fiyat</th>
 <th style="border: 1px solid #004a99; padding: 5px;">FOB Kıymet</th>
 <th style="border: 1px solid #004a99; padding: 5px;">Navlun/Sigorta</th>
@@ -355,6 +356,7 @@ elif page == "Dijital Beyanname":
 <td style="border: 1px solid #ddd; padding: 5px;">{data.get(f'Ürün_Tanımı_{i}', '---')}</td>
 <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{data.get(f'GTIP_Kodu_{i}', '---')}</td>
 <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{data.get(f'Kap_Adedi_{i}', 0)} {data.get(f'Tamamlayıcı_Ölçü_Birimi_{i}', '---')}</td>
+<td style="border: 1px solid #ddd; padding: 5px; text-align: center;">N: {data.get(f'Net_Ağırlık_KG_{i}', 0)}<br>B: {data.get(f'Brüt_Ağırlık_KG_{i}', 0)}</td>
 <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{float(data.get(f'Kalem_Fiyatı_{i}', 0)):.2f}</td>
 <td style="border: 1px solid #ddd; padding: 5px; text-align: right;">{float(data.get(f'İstatistiki_Kıymet_FOB_{i}', 0)):.2f}</td>
 <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">N: {float(data.get(f'Navlun_Tutari_{i}', 0)):.2f}<br>S: {float(data.get(f'Sigorta_Tutari_{i}', 0)):.2f}</td>
@@ -367,7 +369,7 @@ elif page == "Dijital Beyanname":
 </tbody>
 <tfoot>
 <tr style="font-weight: bold; background-color: #f8f9fa;">
-<td colspan="4" style="text-align: right; border: 1px solid #004a99; padding: 10px;">TOPLAMLAR:</td>
+<td colspan="5" style="text-align: right; border: 1px solid #004a99; padding: 10px;">TOPLAMLAR:</td>
 <td colspan="2" style="border: 1px solid #004a99; padding: 10px; text-align: center;">Net: {net_toplam} KG / Brüt: {brut_toplam} KG</td>
 <td colspan="2" style="border: 1px solid #004a99; padding: 10px; text-align: right;">GENEL TOPLAM ({doviz}):</td>
 <td style="border: 1px solid #004a99; padding: 10px; text-align: right;">{toplam:.2f}</td>
