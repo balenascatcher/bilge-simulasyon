@@ -403,6 +403,40 @@ elif page == "Dijital Beyanname":
 <b style="font-size: 14px;">Yetkili İmza ve Kaşe</b>
 </div>
 </div>
+
+<div style="margin-top: 20px; padding: 15px; border: 1px dashed #004a99; background-color: #f0f7ff; font-size: 12px;">
+<strong style="color: #004a99; display: block; margin-bottom: 5px;">📌 ÖNEMLİ NOT: BEYANNAME İÇİN VERGİ ORANLARI</strong>
+<table style="width: 100%; border-collapse: collapse; text-align: center;">
+<tr style="background-color: #e1ecf7; font-weight: bold;">
+<td style="border: 1px solid #ccc; padding: 5px;">Kalem No</td>
+<td style="border: 1px solid #ccc; padding: 5px;">Gümrük Vergisi (GV)</td>
+<td style="border: 1px solid #ccc; padding: 5px;">ÖTV</td>
+<td style="border: 1px solid #ccc; padding: 5px;">KDV</td>
+</tr>
+"""
+                for i in range(1, 4):
+                    # Oranları hesapla
+                    cif = float(data.get(f'CIF_Toplam_{i}', 0))
+                    gv_tutar = float(data.get(f'GV_{i}', 0))
+                    otv_tutar = float(data.get(f'ÖTV_{i}', 0))
+                    kdv_tutar = float(data.get(f'KDV_{i}', 0))
+                    
+                    gv_oran = round((gv_tutar / cif * 100), 1) if cif > 0 else 0
+                    otv_oran = round((otv_tutar / (cif + gv_tutar) * 100), 1) if (cif + gv_tutar) > 0 else 0
+                    kdv_oran = round((kdv_tutar / (cif + gv_tutar + otv_tutar) * 100), 1) if (cif + gv_tutar + otv_tutar) > 0 else 0
+                    
+                    invoice_html += f"""
+<tr>
+<td style="border: 1px solid #ccc; padding: 5px;">Kalem {i}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{gv_oran}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{otv_oran}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{kdv_oran}</td>
+</tr>"""
+
+                invoice_html += """
+</table>
+<p style="margin-top: 10px; font-style: italic; color: #555;">* Vergi oranları sistem tarafından otomatik hesaplanmıştır. Lütfen beyannamenizi bu oranlara göre doldurunuz.</p>
+</div>
 </div>"""
                 st.markdown(invoice_html, unsafe_allow_html=True)
                 st.info("💡 Yukarıdaki faturadaki bilgileri kullanarak yan sekmedeki beyannameyi doldurunuz.")
