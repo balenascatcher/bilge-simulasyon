@@ -416,22 +416,34 @@ elif page == "Dijital Beyanname":
 </tr>
 """
                 for i in range(1, 4):
-                    # Oranları hesapla
+                    # Oranları hesapla (Excel'deki kümülatif toplam mantığına göre)
                     cif = float(data.get(f'CIF_Toplam_{i}', 0))
-                    gv_tutar = float(data.get(f'GV_{i}', 0))
-                    otv_tutar = float(data.get(f'ÖTV_{i}', 0))
-                    kdv_tutar = float(data.get(f'KDV_{i}', 0))
+                    gv_toplam = float(data.get(f'GV_{i}', 0))
+                    otv_toplam = float(data.get(f'ÖTV_{i}', 0))
+                    kdv_toplam = float(data.get(f'KDV_{i}', 0))
                     
-                    gv_oran = round((gv_tutar / cif * 100), 1) if cif > 0 else 0
-                    otv_oran = round((otv_tutar / (cif + gv_tutar) * 100), 1) if (cif + gv_tutar) > 0 else 0
-                    kdv_oran = round((kdv_tutar / (cif + gv_tutar + otv_tutar) * 100), 1) if (cif + gv_tutar + otv_tutar) > 0 else 0
+                    # Gerçek vergi tutarlarını bul (Fark alarak)
+                    gv_tutar = gv_toplam - cif if gv_toplam > cif else 0
+                    
+                    # ÖTV matrahı GV'li tutardır
+                    otv_matrah = gv_toplam
+                    otv_tutar = otv_toplam - otv_matrah if otv_toplam > otv_matrah else 0
+                    
+                    # KDV matrahı ÖTV'li tutardır (ÖTV yoksa GV'li tutar)
+                    kdv_matrah = otv_toplam if otv_toplam > 0 else gv_toplam
+                    kdv_tutar = kdv_toplam - kdv_matrah if kdv_toplam > kdv_matrah else 0
+                    
+                    # Oranları hesapla
+                    gv_oran = round((gv_tutar / cif * 100), 0) if cif > 0 else 0
+                    otv_oran = round((otv_tutar / otv_matrah * 100), 0) if otv_matrah > 0 else 0
+                    kdv_oran = round((kdv_tutar / kdv_matrah * 100), 0) if kdv_matrah > 0 else 0
                     
                     invoice_html += f"""
 <tr>
 <td style="border: 1px solid #ccc; padding: 5px;">Kalem {i}</td>
-<td style="border: 1px solid #ccc; padding: 5px;">%{gv_oran}</td>
-<td style="border: 1px solid #ccc; padding: 5px;">%{otv_oran}</td>
-<td style="border: 1px solid #ccc; padding: 5px;">%{kdv_oran}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{int(gv_oran)}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{int(otv_oran)}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{int(kdv_oran)}</td>
 </tr>"""
 
                 invoice_html += """
@@ -594,14 +606,25 @@ elif page == "Dijital Beyanname":
                         check_num(st.session_state[f"gross_{i}"], data[f'Brüt_Ağırlık_KG_{i}'], f"Kalem {i}: Brüt Ağırlık")
                         check_num(st.session_state[f"fiyat_{i}"], data[f'Kalem_Fiyatı_{i}'], f"Kalem {i}: Kalem Fiyatı")
                         
-                        # Taxes
+                        # Taxes - Calculate actual tax amounts from cumulative Excel columns
+                        cif_val = float(data[f'CIF_Toplam_{i}'])
+                        gv_cum = float(data[f'GV_{i}'])
+                        otv_cum = float(data[f'ÖTV_{i}'])
+                        kdv_cum = float(data[f'KDV_{i}'])
+                        
+                        actual_gv = gv_cum - cif_val if gv_cum > cif_val else 0
+                        actual_otv = otv_cum - gv_cum if otv_cum > gv_cum else 0
+                        
+                        kdv_matrah = otv_cum if otv_cum > 0 else gv_cum
+                        actual_kdv = kdv_cum - kdv_matrah if kdv_cum > kdv_matrah else 0
+                        
                         check_num(st.session_state[f"fob_{i}"], data[f'İstatistiki_Kıymet_FOB_{i}'], f"Kalem {i}: İstatistik Kıymet", tol=0.5)
                         check_num(st.session_state[f"navlun_{i}"], data[f'Navlun_Tutari_{i}'], f"Kalem {i}: Navlun", tol=0.5)
                         check_num(st.session_state[f"sigorta_{i}"], data[f'Sigorta_Tutari_{i}'], f"Kalem {i}: Sigorta", tol=0.5)
-                        check_num(st.session_state[f"cif_{i}"], data[f'CIF_Toplam_{i}'], f"Kalem {i}: Matrah (CIF)", tol=0.5)
-                        check_num(st.session_state[f"gv_{i}"], data[f'GV_{i}'], f"Kalem {i}: Gümrük Vergisi", tol=0.5)
-                        check_num(st.session_state[f"otv_{i}"], data[f'ÖTV_{i}'], f"Kalem {i}: ÖTV", tol=0.5)
-                        check_num(st.session_state[f"kdv_{i}"], data[f'KDV_{i}'], f"Kalem {i}: KDV", tol=0.5)
+                        check_num(st.session_state[f"cif_{i}"], cif_val, f"Kalem {i}: Matrah (CIF)", tol=0.5)
+                        check_num(st.session_state[f"gv_{i}"], actual_gv, f"Kalem {i}: Gümrük Vergisi", tol=0.5)
+                        check_num(st.session_state[f"otv_{i}"], actual_otv, f"Kalem {i}: ÖTV", tol=0.5)
+                        check_num(st.session_state[f"kdv_{i}"], actual_kdv, f"Kalem {i}: KDV", tol=0.5)
                         check_num(st.session_state[f"v_toplam_{i}"], data[f'Vergiler_Toplami_{i}'], f"Kalem {i}: Vergiler Toplamı", tol=0.5)
 
                     if not errors:
