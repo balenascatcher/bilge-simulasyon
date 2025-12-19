@@ -405,13 +405,14 @@ elif page == "Dijital Beyanname":
 </div>
 
 <div style="margin-top: 20px; padding: 15px; border: 1px dashed #004a99; background-color: #f0f7ff; font-size: 12px;">
-<strong style="color: #004a99; display: block; margin-bottom: 5px;">📌 ÖNEMLİ NOT: BEYANNAME İÇİN VERGİ ORANLARI</strong>
+<strong style="color: #004a99; display: block; margin-bottom: 5px;">📌 ÖNEMLİ NOT: BEYANNAME İÇİN VERGİ ORANLARI VE MATRAH MANTIĞI</strong>
+<p style="margin-bottom: 10px; color: #333;">Beyannameyi doldururken aşağıdaki oranları ve kümülatif vergi matrahı mantığını kullanınız:</p>
 <table style="width: 100%; border-collapse: collapse; text-align: center;">
 <tr style="background-color: #e1ecf7; font-weight: bold;">
 <td style="border: 1px solid #ccc; padding: 5px;">Kalem No</td>
-<td style="border: 1px solid #ccc; padding: 5px;">Gümrük Vergisi (GV)</td>
-<td style="border: 1px solid #ccc; padding: 5px;">ÖTV</td>
-<td style="border: 1px solid #ccc; padding: 5px;">KDV</td>
+<td style="border: 1px solid #ccc; padding: 5px;">Gümrük Vergisi (GV)<br><small>(CIF üzerinden)</small></td>
+<td style="border: 1px solid #ccc; padding: 5px;">ÖTV<br><small>(CIF + GV üzerinden)</small></td>
+<td style="border: 1px solid #ccc; padding: 5px;">KDV<br><small>(CIF + GV + ÖTV üzerinden)</small></td>
 </tr>
 """
                 for i in range(1, 4):
