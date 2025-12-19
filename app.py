@@ -340,8 +340,8 @@ elif page == "Dijital Beyanname":
 <th style="border: 1px solid #004a99; padding: 5px;">GTİP</th>
 <th style="border: 1px solid #004a99; padding: 5px;">Miktar/Birim</th>
 <th style="border: 1px solid #004a99; padding: 5px;">Net/Brüt (KG)</th>
-<th style="border: 1px solid #004a99; padding: 5px;">Birim Fiyat</th>
-<th style="border: 1px solid #004a99; padding: 5px;">FOB Kıymet</th>
+<th style="border: 1px solid #004a99; padding: 5px;">Kalem Fiyatı</th>
+<th style="border: 1px solid #004a99; padding: 5px;">İstatistiki Kıymet</th>
 <th style="border: 1px solid #004a99; padding: 5px;">Navlun/Sigorta</th>
 <th style="border: 1px solid #004a99; padding: 5px;">CIF Toplam</th>
 <th style="border: 1px solid #004a99; padding: 5px;">Vergiler</th>
