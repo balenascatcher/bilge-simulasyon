@@ -424,9 +424,9 @@ elif page == "Dijital Beyanname":
                     invoice_html += f"""
 <tr>
 <td style="border: 1px solid #ccc; padding: 5px;">Kalem {i}</td>
-<td style="border: 1px solid #ccc; padding: 5px;">%{int(float(gv_oran))}</td>
-<td style="border: 1px solid #ccc; padding: 5px;">%{int(float(otv_oran))}</td>
-<td style="border: 1px solid #ccc; padding: 5px;">%{int(float(kdv_oran))}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{int(round(float(gv_oran)))}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{int(round(float(otv_oran)))}</td>
+<td style="border: 1px solid #ccc; padding: 5px;">%{int(round(float(kdv_oran)))}</td>
 </tr>"""
 
                 invoice_html += """
