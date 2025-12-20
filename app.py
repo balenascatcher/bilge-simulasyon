@@ -125,7 +125,7 @@ if 'pending_matches' not in st.session_state:
 # Sidebar Navigation
 st.sidebar.title("BİLGE SİSTEMİ")
 st.sidebar.subheader("İthalat Beyanname Portali")
-page = st.sidebar.radio("Menü", ["Öğrenci Girişi", "Dijital Beyanname", "Hoca Paneli"])
+page = st.sidebar.radio("Menü", ["Öğrenci Girişi", "Dijital Beyanname", "Akademisyen Paneli"])
 
 if page == "Öğrenci Girişi":
     st.title("🎓 Trakya Üniversitesi Gümrük İşletme Bölümü")
@@ -626,7 +626,7 @@ elif page == "Dijital Beyanname":
                         odev_log_name = data.get('Ödev_No', st.session_state.get('current_odev', '1'))
                         log_attempt(data['Öğrenci_Numarası'], data['Öğrenci_Ad_Soyad'], False, errors, odev_log_name)
 
-elif page == "Hoca Paneli":
+elif page == "Akademisyen Paneli":
     st.title("📽️ Öğretim Üyesi Yönetim Paneli")
     
     if not st.session_state.admin_mode:
