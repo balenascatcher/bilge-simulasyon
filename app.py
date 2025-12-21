@@ -735,15 +735,44 @@ elif page == "Akademisyen Paneli":
             # Student Submission Status
             st.divider()
             st.subheader("📊 Öğrenci Beyanname Teslim Durumu")
-            if not log_df.empty:
-                # Her öğrencinin en az bir başarılı denemesi var mı?
-                submission_status = log_df.groupby(['student_no', 'student_name'])['success'].any().reset_index()
-                submission_status['Teslim Durumu'] = submission_status['success'].apply(lambda x: "✅ Teslim Edildi" if x else "❌ Teslim Edilmedi")
-                submission_status = submission_status[['student_no', 'student_name', 'Teslim Durumu']]
-                submission_status.columns = ["Öğrenci Numarası", "Öğrenci Adı Soyadı", "Teslim Durumu"]
-                st.dataframe(submission_status, use_container_width=True)
+            
+            all_students_df = pd.DataFrame()
+            for odev_name in all_odevs: # Tüm ödev sayfalarındaki öğrencileri topla
+                if odev_name != "Hepsi":
+                    df_odev = load_assignment_data(odev_name)
+                    if df_odev is not None and not df_odev.empty:
+                        all_students_df = pd.concat([
+                            all_students_df,
+                            df_odev[['Öğrenci_Numarası', 'Öğrenci_Ad_Soyad']].drop_duplicates()
+                        ], ignore_index=True)
+            
+            all_students_df = all_students_df.drop_duplicates(subset=['Öğrenci_Numarası']).reset_index(drop=True)
+            
+            if not all_students_df.empty:
+                # Başarılı deneme yapmış öğrencileri bul
+                successful_submissions = log_df[log_df['success'] == True]
+                successful_students = successful_submissions[['student_no']].drop_duplicates()
+                
+                # Tüm öğrencileri başarılı denemelerle birleştir
+                merged_df = pd.merge(
+                    all_students_df,
+                    successful_students,
+                    left_on='Öğrenci_Numarası',
+                    right_on='student_no',
+                    how='left',
+                    indicator=True
+                )
+                
+                # Teslim durumunu belirle
+                merged_df['Teslim Durumu'] = merged_df['_merge'].apply(lambda x: "✅ Teslim Edildi" if x == 'both' else "❌ Teslim Edilmedi")
+                
+                # Gereksiz sütunları temizle ve yeniden adlandır
+                final_submission_status = merged_df[['Öğrenci_Numarası', 'Öğrenci_Ad_Soyad', 'Teslim Durumu']]
+                final_submission_status.columns = ["Öğrenci Numarası", "Öğrenci Adı Soyadı", "Teslim Durumu"]
+                
+                st.dataframe(final_submission_status, use_container_width=True)
             else:
-                st.info("Henüz hiç beyanname denemesi yapılmadı.")
+                st.info("Henüz ödev atanmış öğrenci bulunmamaktadır.")
 
             # Analytics
             st.subheader("En Çok Hata Yapılan Alanlar")
