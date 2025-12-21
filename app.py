@@ -65,18 +65,11 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Load Data
-@st.cache_data
-def get_all_assignments():
-    if os.path.exists(EXCEL_FILE):
-        xl = pd.ExcelFile(EXCEL_FILE)
-        return xl.sheet_names
-    return []
-
+@st.cache_data(ttl=600) # 10 dakika boyunca veriyi hafızada tut, hızlı açılmasını sağla
 def load_assignment_data(sheet_name):
     if os.path.exists(EXCEL_FILE):
         df = pd.read_excel(EXCEL_FILE, sheet_name=sheet_name)
-        # Fill all NaN values with "---" for strings and 0 for numbers
-        # First, handle numeric columns
+        # Sayısal sütunları temizle
         numeric_cols = ['Toplam_Fatura_Değeri', 'Kap_Adedi_1', 'Net_Ağırlık_KG_1', 'Brüt_Ağırlık_KG_1', 'Kalem_Fiyatı_1',
                         'Kap_Adedi_2', 'Net_Ağırlık_KG_2', 'Brüt_Ağırlık_KG_2', 'Kalem_Fiyatı_2',
                         'Kap_Adedi_3', 'Net_Ağırlık_KG_3', 'Brüt_Ağırlık_KG_3', 'Kalem_Fiyatı_3',
@@ -85,7 +78,6 @@ def load_assignment_data(sheet_name):
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
         
-        # Then fill remaining NaNs (strings) with "---"
         df = df.fillna("---")
         return df
     return None
@@ -171,11 +163,13 @@ if page == "Öğrenci Girişi":
             if submit_login:
                 df_odev = load_assignment_data(selected_odev)
                 if df_odev is not None:
-                    try:
-                        student_no_int = int(student_no)
-                        match = df_odev[df_odev['Öğrenci_Numarası'] == student_no_int]
-                    except ValueError:
-                        match = df_odev[df_odev['Öğrenci_Numarası'].astype(str) == student_no]
+                    # Giriş temizleme: Boşlukları sil ve stringe çevir
+                    input_no = str(student_no).strip()
+                    
+                    # Eşleşme ara: Hem sayısal hem string olarak kontrol et
+                    match = df_odev[
+                        (df_odev['Öğrenci_Numarası'].astype(str).str.strip() == input_no)
+                    ]
                     
                     if not match.empty:
                         # Check Deadline if column exists
