@@ -737,8 +737,11 @@ elif page == "Akademisyen Paneli":
             st.subheader("📊 Öğrenci Beyanname Teslim Durumu")
             
             all_students_df = pd.DataFrame()
-            for odev_name in all_odevs: # Tüm ödev sayfalarındaki öğrencileri topla
-                if odev_name != "Hepsi":
+            excel_sheet_names = get_all_assignments() # Mevcut Excel sayfa isimlerini al
+            
+            # Yalnızca Excel'de var olan ödev sayfalarını işle
+            for odev_name in all_odevs: 
+                if odev_name != "Hepsi" and odev_name in excel_sheet_names:
                     df_odev = load_assignment_data(odev_name)
                     if df_odev is not None and not df_odev.empty:
                         all_students_df = pd.concat([
