@@ -719,6 +719,8 @@ elif page == "Akademisyen Paneli":
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("Henüz hata kaydı bulunamamaktadır.")
+        else:
+            st.info("Henüz hiç deneme yapılmadı.")
                 
         # Login Attempts Section
         st.divider()
@@ -732,6 +734,3 @@ elif page == "Akademisyen Paneli":
             st.dataframe(login_df, use_container_width=True)
         else:
             st.info("Henüz giriş denemesi kaydı bulunmamaktadır.")
-                
-    else:
-        st.info("Henüz hiç deneme yapılmadı.")
