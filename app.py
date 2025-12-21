@@ -754,12 +754,13 @@ elif page == "Akademisyen Paneli":
             if not all_students.empty:
                 # Log dosyasında herhangi bir deneme yapmış öğrencileri bul (başarılı/başarısız fark etmez)
                 logged_students = pd.DataFrame(logs)[['student_no']].drop_duplicates()
+                logged_students['student_no'] = logged_students['student_no'].astype(str)
                 
                 # Tüm öğrencileri deneme yapmış öğrencilerle birleştir
                 merged_df = pd.merge(
                     all_students,
                     logged_students,
-                    left_on='Öğrenci_Numarası',
+                    left_on=all_students['Öğrenci_Numarası'].astype(str),
                     right_on='student_no',
                     how='left',
                     indicator=True
