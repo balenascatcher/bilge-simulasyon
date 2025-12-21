@@ -10,6 +10,7 @@ EXCEL_FILE = "mail_merge_wide_3kalem.xlsx"
 LOG_FILE = "student_logs.json"
 LOGIN_LOG_FILE = "login_logs.json"
 ADMIN_PASSWORD = "trakya_gumruk"
+SYSTEM_LOCKED = True  # Sistemi öğrenci erişimine kapatmak için True yapın
 
 # Page Config
 st.set_page_config(page_title="Trakya Üniversitesi - BİLGE Simülasyonu", layout="wide")
@@ -197,6 +198,11 @@ if page == "Öğrenci Girişi":
     st.title("🎓 Trakya Üniversitesi Gümrük İşletme Bölümü")
     st.subheader("Dijital Gümrük Beyanname Simülasyonu (BİLGE)")
     
+    if SYSTEM_LOCKED:
+        st.error("⚠️ SİSTEM KAPATILMIŞTIR")
+        st.warning("Bu dönem için beyanname giriş süresi sona ermiştir. Artık giriş yapılamaz.")
+        st.stop()
+    
     assignments = get_all_assignments()
     
     if st.session_state.logged_in:
@@ -275,6 +281,11 @@ if page == "Öğrenci Girişi":
                 st.rerun()
 
 elif page == "Dijital Beyanname":
+    if SYSTEM_LOCKED:
+        st.error("⚠️ SİSTEM KAPATILMIŞTIR")
+        st.warning("Bu dönem için beyanname giriş süresi sona ermiştir.")
+        st.stop()
+
     if not st.session_state.logged_in:
         st.warning("Lütfen önce 'Öğrenci Girişi' sayfasından giriş yapınız.")
     else:
