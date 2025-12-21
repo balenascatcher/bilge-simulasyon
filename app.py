@@ -748,6 +748,15 @@ elif page == "Akademisyen Paneli":
             st.subheader(f"📝 Beyanname Tescil İşlemleri (Loglar) - {selected_filter}")
             st.dataframe(log_df, use_container_width=True)
             
+            # Download Button for Logs
+            csv = log_df.to_csv(index=False).encode('utf-8-sig')
+            st.download_button(
+                label="📥 Bu Raporu İndir (CSV)",
+                data=csv,
+                file_name=f'beyanname_loglari_{selected_filter}_{datetime.now().strftime("%Y%m%d")}.csv',
+                mime='text/csv',
+            )
+            
             col_a, col_b, col_c = st.columns(3)
             with col_a:
                 st.metric("Toplam Deneme", len(log_df))
@@ -841,6 +850,15 @@ elif page == "Akademisyen Paneli":
                 
                 # Show unique students table
                 st.dataframe(unique_logins, use_container_width=True)
+                
+                # Download Button for Login Logs
+                csv_login = unique_logins.to_csv(index=False).encode('utf-8-sig')
+                st.download_button(
+                    label="📥 Giriş Listesini İndir (CSV)",
+                    data=csv_login,
+                    file_name=f'giris_listesi_{datetime.now().strftime("%Y%m%d")}.csv',
+                    mime='text/csv',
+                )
                 
                 # Show raw logs in expander
                 with st.expander("Tüm Giriş Loglarını Gör (Detaylı)"):
