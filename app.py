@@ -8,6 +8,7 @@ import json
 # Configuration
 EXCEL_FILE = "mail_merge_wide_3kalem.xlsx"
 LOG_FILE = "student_logs.json"
+LOGIN_LOG_FILE = "login_logs.json"
 ADMIN_PASSWORD = "trakya_gumruk"
 
 # Page Config
@@ -112,6 +113,27 @@ def log_attempt(student_no, student_name, success, errors, odev_name="Bilinmiyor
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         json.dump(logs, f, ensure_ascii=False, indent=4)
 
+def log_login_attempt(student_no, odev_name, status, details=""):
+    log_entry = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "student_no": str(student_no),
+        "odev_no": str(odev_name),
+        "status": status,
+        "details": details
+    }
+    logs = []
+    if os.path.exists(LOGIN_LOG_FILE):
+        with open(LOGIN_LOG_FILE, "r", encoding="utf-8") as f:
+            try:
+                logs = json.load(f)
+            except:
+                logs = []
+    logs.append(log_entry)
+    # Keep only last 500 attempts to save space
+    logs = logs[-500:]
+    with open(LOGIN_LOG_FILE, "w", encoding="utf-8") as f:
+        json.dump(logs, f, ensure_ascii=False, indent=4)
+
 # Session State Initialization
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -187,9 +209,11 @@ if page == "Öğrenci Girişi":
                         if odev_no != "---":
                             st.info(f"📌 Ödev No: {odev_no}")
                         
+                        log_login_attempt(student_no, selected_odev, "Başarılı")
                         st.rerun()
                     else:
                         st.error(f"Bu öğrenci numarası '{selected_odev}' sayfasında bulunamadı.")
+                        log_login_attempt(student_no, selected_odev, "Hatalı", "Numara bulunamadı")
 
         # Handle multiple matches outside the form
         if 'pending_matches' in st.session_state and st.session_state.pending_matches is not None:
@@ -696,5 +720,18 @@ elif page == "Akademisyen Paneli":
             else:
                 st.info("Henüz hata kaydı bulunamamaktadır.")
                 
+        # Login Attempts Section
+        st.divider()
+        st.subheader("🔑 Giriş Denemeleri (Son 500)")
+        if os.path.exists(LOGIN_LOG_FILE):
+            with open(LOGIN_LOG_FILE, "r", encoding="utf-8") as f:
+                login_logs = json.load(f)
+            login_df = pd.DataFrame(login_logs)
+            # Sort by timestamp descending
+            login_df = login_df.sort_values(by="timestamp", ascending=False)
+            st.dataframe(login_df, use_container_width=True)
         else:
-            st.info("Henüz hiç deneme yapılmadı.")
+            st.info("Henüz giriş denemesi kaydı bulunmamaktadır.")
+                
+    else:
+        st.info("Henüz hiç deneme yapılmadı.")
