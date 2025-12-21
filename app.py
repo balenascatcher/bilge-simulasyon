@@ -76,11 +76,43 @@ def get_all_assignments():
 def load_assignment_data(sheet_name):
     if os.path.exists(EXCEL_FILE):
         df = pd.read_excel(EXCEL_FILE, sheet_name=sheet_name)
+        
+        # Beklenen tüm sütunların listesi (Eksik olanları "---" ile doldurmak için)
+        expected_cols = [
+            'Öğrenci_Numarası', 'Öğrenci_Ad_Soyad', 'Fatura_Numarası', 'Beyanname_Türü', 
+            'Rejim_Kodu', 'Alıcı_Adı_Adresi', 'Beyan_Sahibi_Temsilci', 'Gideceği_Ülke_Kodu', 
+            'Teslim_Şekli_Yeri', 'Döviz', 'Toplam_Fatura_Değeri', 'Beyan_Yeri', 'Beyan_Tarihi', 
+            'Gönderici_Adı_Adresi_VergiNo', 'İlk_Varış_Ülkesi_Kodu', 'Ticareti_Yapan_Ülke_Kodu', 
+            'Referans_Numarası', 'Sevk_Ülkesi_Adı_Kodu', 'Taşıma_Aracı_Kimliği', 'Konteyner_Kodu', 
+            'Taşıma_Şekli_Sınır', 'Taşıma_Şekli_Dahili', 'Boşaltma_Yeri', 'Varış Gümrük İdaresi', 
+            'Banka_Adı_Şube', 'Ödeme_Şekli', 'Toplam_Net_Ağırlık_KG', 'Toplam_Brüt_Ağırlık_KG', 
+            'SWIFT_Kodu', 'IBAN', 'Ödev_No', 'Son_Teslim'
+        ]
+        # Kalem bazlı sütunları da ekle
+        for i in range(1, 4):
+            expected_cols.extend([
+                f'GTIP_Kodu_{i}', f'Ürün_Tanımı_{i}', f'Menşe_Ülke_Kodu_{i}', f'Kap_Cinsi_{i}', 
+                f'Kap_Adedi_{i}', f'Net_Ağırlık_KG_{i}', f'Brüt_Ağırlık_KG_{i}', 
+                f'Tamamlayıcı_Ölçü_Birimi_{i}', f'Kalem_Fiyatı_{i}', f'İstatistiki_Kıymet_FOB_{i}', 
+                f'Navlun_Tutari_{i}', f'Sigorta_Tutari_{i}', f'CIF_Toplam_{i}', f'GV_{i}', 
+                f'GV_Orani_{i}', f'ÖTV_{i}', f'ÖTV_Orani_{i}', f'KDV_{i}', f'KDV_Orani_{i}', 
+                f'Vergiler_Toplami_{i}', f'Toplam_Tutar_{i}', f'Ek_Belge_Kodu_{i}', f'Ek_Belge_Referans_{i}'
+            ])
+
+        # Eksik sütunları ekle
+        for col in expected_cols:
+            if col not in df.columns:
+                df[col] = "---"
+
         # Sayısal sütunları temizle
-        numeric_cols = ['Toplam_Fatura_Değeri', 'Kap_Adedi_1', 'Net_Ağırlık_KG_1', 'Brüt_Ağırlık_KG_1', 'Kalem_Fiyatı_1',
-                        'Kap_Adedi_2', 'Net_Ağırlık_KG_2', 'Brüt_Ağırlık_KG_2', 'Kalem_Fiyatı_2',
-                        'Kap_Adedi_3', 'Net_Ağırlık_KG_3', 'Brüt_Ağırlık_KG_3', 'Kalem_Fiyatı_3',
-                        'Toplam_Net_Ağırlık_KG', 'Toplam_Brüt_Ağırlık_KG']
+        numeric_cols = ['Toplam_Fatura_Değeri', 'Toplam_Net_Ağırlık_KG', 'Toplam_Brüt_Ağırlık_KG']
+        for i in range(1, 4):
+            numeric_cols.extend([f'Kap_Adedi_{i}', f'Net_Ağırlık_KG_{i}', f'Brüt_Ağırlık_KG_{i}', 
+                                f'Kalem_Fiyatı_{i}', f'İstatistiki_Kıymet_FOB_{i}', f'Navlun_Tutari_{i}', 
+                                f'Sigorta_Tutari_{i}', f'CIF_Toplam_{i}', f'GV_{i}', f'ÖTV_{i}', f'KDV_{i}', 
+                                f'Vergiler_Toplami_{i}', f'Toplam_Tutar_{i}', f'GV_Orani_{i}', 
+                                f'ÖTV_Orani_{i}', f'KDV_Orani_{i}'])
+        
         for col in numeric_cols:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
@@ -463,7 +495,7 @@ elif page == "Dijital Beyanname":
                 st.info("💡 Yukarıdaki faturadaki bilgileri kullanarak yan sekmedeki beyannameyi doldurunuz.")
 
         with main_tabs[1]:
-            st.write(f"**Beyan Sahibi:** {data['Öğrenci_Ad_Soyad']} | **Fatura No:** {data['Fatura_Numarası']}")
+            st.write(f"**Beyan Sahibi:** {data.get('Öğrenci_Ad_Soyad', '---')} | **Fatura No:** {data.get('Fatura_Numarası', '---')}")
             
             with st.form("bilge_form"):
                 # SECTION 1: GENEL BILGILER & TARAFLAR
