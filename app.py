@@ -72,6 +72,19 @@ def get_all_assignments():
         return xl.sheet_names
     return []
 
+@st.cache_data(ttl=600)
+def get_all_unique_students():
+    all_students = pd.DataFrame()
+    xl = pd.ExcelFile(EXCEL_FILE)
+    for sheet_name in xl.sheet_names:
+        # Sadece gerekli sütunları okumayı dene, yoksa boş DataFrame ekle
+        try:
+            df_sheet = pd.read_excel(EXCEL_FILE, sheet_name=sheet_name, usecols=['Öğrenci_Numarası', 'Öğrenci_Ad_Soyad'])
+            all_students = pd.concat([all_students, df_sheet[['Öğrenci_Numarası', 'Öğrenci_Ad_Soyad']]], ignore_index=True)
+        except ValueError: # Sütunlar yoksa veya sayfa boşsa hata vermez
+            continue
+    return all_students.drop_duplicates(subset=['Öğrenci_Numarası']).reset_index(drop=True)
+
 @st.cache_data(ttl=600) # 10 dakika boyunca veriyi hafızada tut, hızlı açılmasını sağla
 def load_assignment_data(sheet_name):
     if os.path.exists(EXCEL_FILE):
@@ -736,38 +749,24 @@ elif page == "Akademisyen Paneli":
             st.divider()
             st.subheader("📊 Öğrenci Beyanname Teslim Durumu")
             
-            all_students_df = pd.DataFrame()
-            excel_sheet_names = get_all_assignments() # Mevcut Excel sayfa isimlerini al
-            
-            # Yalnızca Excel'de var olan ödev sayfalarını işle
-            for odev_name in all_odevs: 
-                if odev_name != "Hepsi" and odev_name in excel_sheet_names:
-                    df_odev = load_assignment_data(odev_name)
-                    if df_odev is not None and not df_odev.empty:
-                        all_students_df = pd.concat([
-                            all_students_df,
-                            df_odev[['Öğrenci_Numarası', 'Öğrenci_Ad_Soyad']].drop_duplicates()
-                        ], ignore_index=True)
-            
-            all_students_df = all_students_df.drop_duplicates(subset=['Öğrenci_Numarası']).reset_index(drop=True)
-            
-            if not all_students_df.empty:
-                # Başarılı deneme yapmış öğrencileri bul
-                successful_submissions = log_df[log_df['success'] == True]
-                successful_students = successful_submissions[['student_no']].drop_duplicates()
+            all_students = get_all_unique_students()
+
+            if not all_students.empty:
+                # Log dosyasında herhangi bir deneme yapmış öğrencileri bul (başarılı/başarısız fark etmez)
+                logged_students = pd.DataFrame(logs)[['student_no']].drop_duplicates()
                 
-                # Tüm öğrencileri başarılı denemelerle birleştir
+                # Tüm öğrencileri deneme yapmış öğrencilerle birleştir
                 merged_df = pd.merge(
-                    all_students_df,
-                    successful_students,
+                    all_students,
+                    logged_students,
                     left_on='Öğrenci_Numarası',
                     right_on='student_no',
                     how='left',
                     indicator=True
                 )
                 
-                # Teslim durumunu belirle
-                merged_df['Teslim Durumu'] = merged_df['_merge'].apply(lambda x: "✅ Teslim Edildi" if x == 'both' else "❌ Teslim Edilmedi")
+                # Teslim durumunu belirle: logda varsa 'Teslim Etti', yoksa 'Teslim Etmedi'
+                merged_df['Teslim Durumu'] = merged_df['_merge'].apply(lambda x: "✅ Teslim Etti" if x == 'both' else "❌ Teslim Etmedi")
                 
                 # Gereksiz sütunları temizle ve yeniden adlandır
                 final_submission_status = merged_df[['Öğrenci_Numarası', 'Öğrenci_Ad_Soyad', 'Teslim Durumu']]
@@ -775,7 +774,7 @@ elif page == "Akademisyen Paneli":
                 
                 st.dataframe(final_submission_status, use_container_width=True)
             else:
-                st.info("Henüz ödev atanmış öğrenci bulunmamaktadır.")
+                st.info("Excel dosyasında ödev atanmış öğrenci bulunmamaktadır.")
 
             # Analytics
             st.subheader("En Çok Hata Yapılan Alanlar")
