@@ -723,6 +723,10 @@ elif page == "Akademisyen Paneli":
             
             log_df = pd.DataFrame(logs)
             
+            # Sort by timestamp descending (En yeni en üstte)
+            if 'timestamp' in log_df.columns:
+                log_df = log_df.sort_values(by="timestamp", ascending=False)
+            
             # Filter by Assignment
             all_odevs = ["Hepsi"] + sorted(log_df['odev_no'].unique().tolist())
             selected_filter = st.selectbox("Ödev Filtresi", all_odevs)
@@ -730,8 +734,8 @@ elif page == "Akademisyen Paneli":
             if selected_filter != "Hepsi":
                 log_df = log_df[log_df['odev_no'] == selected_filter]
 
-            st.subheader(f"Öğrenci Denemeleri ({selected_filter})")
-            st.dataframe(log_df)
+            st.subheader(f"📝 Beyanname Tescil İşlemleri (Loglar) - {selected_filter}")
+            st.dataframe(log_df, use_container_width=True)
             
             col_a, col_b, col_c = st.columns(3)
             with col_a:
@@ -743,9 +747,6 @@ elif page == "Akademisyen Paneli":
                 success_rate = (success_count / len(log_df)) * 100 if len(log_df) > 0 else 0
                 st.metric("Genel Başarı Oranı", f"%{success_rate:.1f}")
 
-            st.subheader("Öğrenci Bazlı Rapor")
-            st.dataframe(log_df, use_container_width=True)
-            
             # Student Submission Status
             st.divider()
             st.subheader("📊 Öğrenci Beyanname Teslim Durumu")
