@@ -65,6 +65,13 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Load Data
+@st.cache_data(ttl=600)
+def get_all_assignments():
+    if os.path.exists(EXCEL_FILE):
+        xl = pd.ExcelFile(EXCEL_FILE)
+        return xl.sheet_names
+    return []
+
 @st.cache_data(ttl=600) # 10 dakika boyunca veriyi hafızada tut, hızlı açılmasını sağla
 def load_assignment_data(sheet_name):
     if os.path.exists(EXCEL_FILE):
