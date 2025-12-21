@@ -732,6 +732,19 @@ elif page == "Akademisyen Paneli":
             st.subheader("Öğrenci Bazlı Rapor")
             st.dataframe(log_df, use_container_width=True)
             
+            # Student Submission Status
+            st.divider()
+            st.subheader("📊 Öğrenci Beyanname Teslim Durumu")
+            if not log_df.empty:
+                # Her öğrencinin en az bir başarılı denemesi var mı?
+                submission_status = log_df.groupby(['student_no', 'student_name'])['success'].any().reset_index()
+                submission_status['Teslim Durumu'] = submission_status['success'].apply(lambda x: "✅ Teslim Edildi" if x else "❌ Teslim Edilmedi")
+                submission_status = submission_status[['student_no', 'student_name', 'Teslim Durumu']]
+                submission_status.columns = ["Öğrenci Numarası", "Öğrenci Adı Soyadı", "Teslim Durumu"]
+                st.dataframe(submission_status, use_container_width=True)
+            else:
+                st.info("Henüz hiç beyanname denemesi yapılmadı.")
+
             # Analytics
             st.subheader("En Çok Hata Yapılan Alanlar")
             all_errors = []
