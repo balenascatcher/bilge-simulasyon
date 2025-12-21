@@ -344,6 +344,7 @@ elif page == "Dijital Beyanname":
                 brut_toplam = data.get('Toplam_Brüt_Ağırlık_KG', 0)
                 odeme_sekli = data.get('Ödeme_Şekli', '---')
                 teslim_sekli = data.get('Teslim_Şekli_Yeri', '---')
+                beyan_sahibi = data.get('Beyan_Sahibi_Temsilci', '---')
 
                 invoice_html = f"""<div style="border: 2px solid #004a99; padding: 30px; background-color: white; color: black; font-family: 'Times New Roman', Times, serif; line-height: 1.6;">
 <div style="text-align: center; border-bottom: 3px double #004a99; padding-bottom: 10px; margin-bottom: 20px;">
@@ -372,6 +373,9 @@ elif page == "Dijital Beyanname":
 <div style="width: 48%; border: 1px solid #ccc; padding: 10px;">
 <strong style="color: #004a99; border-bottom: 1px solid #eee; display: block; margin-bottom: 5px;">ALICI / İTHALATÇI (CONSIGNEE):</strong>
 <div style="font-size: 14px; white-space: pre-wrap;">{alici}</div>
+<br>
+<strong style="color: #004a99; border-bottom: 1px solid #eee; display: block; margin-bottom: 5px;">BEYAN SAHİBİ / TEMSİLCİ (DECLARANT):</strong>
+<div style="font-size: 14px; white-space: pre-wrap;">{beyan_sahibi}</div>
 </div>
 <div style="width: 48%; border: 1px solid #ccc; padding: 10px;">
 <strong style="color: #004a99; border-bottom: 1px solid #eee; display: block; margin-bottom: 5px;">NAKLİYE VE LOJİSTİK BİLGİLERİ:</strong>
