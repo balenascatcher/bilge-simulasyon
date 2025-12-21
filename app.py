@@ -808,13 +808,33 @@ elif page == "Akademisyen Paneli":
                 
         # Login Attempts Section
         st.divider()
-        st.subheader("🔑 Giriş Denemeleri (Son 500)")
+        st.subheader("🔑 Sisteme Giriş Yapan Öğrenciler (Tekil)")
         if os.path.exists(LOGIN_LOG_FILE):
             with open(LOGIN_LOG_FILE, "r", encoding="utf-8") as f:
                 login_logs = json.load(f)
             login_df = pd.DataFrame(login_logs)
-            # Sort by timestamp descending
-            login_df = login_df.sort_values(by="timestamp", ascending=False)
-            st.dataframe(login_df, use_container_width=True)
+            
+            if not login_df.empty:
+                # Sort by timestamp descending
+                login_df = login_df.sort_values(by="timestamp", ascending=False)
+                
+                # Group by student_no to get unique students
+                unique_logins = login_df.groupby('student_no').agg({
+                    'timestamp': 'max',
+                    'status': 'last', # Since we sorted descending, first is last
+                    'odev_no': 'last',
+                    'details': 'count' # Count attempts
+                }).reset_index()
+                
+                unique_logins.columns = ['Öğrenci No', 'Son İşlem Tarihi', 'Son Durum', 'Son Ödev', 'Toplam Giriş Denemesi']
+                
+                # Show unique students table
+                st.dataframe(unique_logins, use_container_width=True)
+                
+                # Show raw logs in expander
+                with st.expander("Tüm Giriş Loglarını Gör (Detaylı)"):
+                    st.dataframe(login_df, use_container_width=True)
+            else:
+                st.info("Henüz giriş denemesi kaydı bulunmamaktadır.")
         else:
             st.info("Henüz giriş denemesi kaydı bulunmamaktadır.")
