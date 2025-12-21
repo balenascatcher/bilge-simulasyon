@@ -687,18 +687,19 @@ elif page == "Dijital Beyanname":
                         check_num(st.session_state[f"kdv_{i}"], expected_kdv, f"Kalem {i}: KDV", tol=0.5)
                         check_num(st.session_state[f"v_toplam_{i}"], data[f'Vergiler_Toplami_{i}'], f"Kalem {i}: Vergiler Toplamı", tol=0.5)
 
+                    # Hata olsa bile beyanname sisteme kaydedilsin
+                    st.balloons()
+                    odev_log_name = data.get('Ödev_No', st.session_state.get('current_odev', '1'))
+                    
                     if not errors:
-                        st.balloons()
                         st.success("🎊 TESCİL BAŞARILI! Beyanname BİLGE sistemine başarıyla kaydedildi. (Başarı Oranı: %100)")
-                        odev_log_name = data.get('Ödev_No', st.session_state.get('current_odev', '1'))
                         log_attempt(data['Öğrenci_Numarası'], data['Öğrenci_Ad_Soyad'], True, [], odev_log_name)
                     else:
-                        st.error(f"Beyanname Tescil Edilemedi! Toplam {len(errors)} hata bulundu.")
-                        with st.expander("Hata Detaylarını Gör"):
+                        st.success(f"✅ Beyanname Sisteme Kaydedildi! ({len(errors)} uyarı bulunmaktadır)")
+                        with st.expander(f"⚠️ Uyarı Detaylarını Gör ({len(errors)} hata)"):
                             for err in errors:
-                                st.write(f"❌ {err}")
-                        odev_log_name = data.get('Ödev_No', st.session_state.get('current_odev', '1'))
-                        log_attempt(data['Öğrenci_Numarası'], data['Öğrenci_Ad_Soyad'], False, errors, odev_log_name)
+                                st.write(f"⚠️ {err}")
+                        log_attempt(data['Öğrenci_Numarası'], data['Öğrenci_Ad_Soyad'], True, errors, odev_log_name)
 
 elif page == "Akademisyen Paneli":
     st.title("📽️ Öğretim Üyesi Yönetim Paneli")
