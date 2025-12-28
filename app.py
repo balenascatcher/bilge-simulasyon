@@ -10,7 +10,7 @@ EXCEL_FILE = "mail_merge_wide_3kalem.xlsx"
 LOG_FILE = "student_logs.json"
 LOGIN_LOG_FILE = "login_logs.json"
 ADMIN_PASSWORD = "trakya_gumruk"
-SYSTEM_LOCKED = True  # Sistemi öğrenci erişimine kapatmak için True yapın
+SYSTEM_LOCKED = False  # Sistemi öğrenci erişimine kapatmak için True yapın
 
 # Page Config
 st.set_page_config(page_title="Trakya Üniversitesi - BİLGE Simülasyonu", layout="wide")
@@ -612,105 +612,73 @@ elif page == "Dijital Beyanname":
 
                 st.divider()
                 submit_decl = st.form_submit_button("BEYANNAMEYİ TESCİL ET (GÖNDER)")
-                
+
                 if submit_decl:
-                    errors = []
-                    
-                    # Helper to compare strings (case-insensitive, stripped)
-                    def check_str(input_val, correct_val, field_name):
-                        if str(input_val).strip().lower() != str(correct_val).strip().lower():
-                            errors.append(f"{field_name} hatalı.")
+                    # Build a comparison of student inputs vs system (expected) values
+                    comparisons = []
+                    def add_comp(label, student_val, expected_val):
+                        comparisons.append({
+                            "Alan": label,
+                            "Öğrenci Cevabı": "" if student_val is None else str(student_val),
+                            "Sistem (Beklenen)": "" if expected_val is None else str(expected_val)
+                        })
 
-                    # Helper to compare numbers (with tolerance)
-                    def check_num(input_val, correct_val, field_name, tol=0.1):
-                        try:
-                            if abs(float(input_val) - float(correct_val)) > tol:
-                                errors.append(f"{field_name} hatalı veya eksik hesaplanmış.")
-                        except:
-                            errors.append(f"{field_name} sayısal bir değer olmalıdır.")
+                    # General fields
+                    add_comp("Varış Gümrük İdaresi", v_gumruk, data.get('Varış Gümrük İdaresi', '---'))
+                    add_comp("Beyanname Türü", b_turu, data.get('Beyanname_Türü', '---'))
+                    add_comp("Çıkış Rejimi", c_rejimi, data.get('Rejim_Kodu', '---'))
+                    add_comp("Referans Numarası", ref_no, data.get('Referans_Numarası', '---'))
+                    add_comp("Gönderici", gonderici, data.get('Gönderici_Adı_Adresi_VergiNo', '---'))
+                    add_comp("Alıcı", alici, data.get('Alıcı_Adı_Adresi', '---'))
+                    add_comp("Beyan Sahibi/Temsilci", temsilci, data.get('Beyan_Sahibi_Temsilci', '---'))
+                    add_comp("Beyan Yeri", b_yeri, data.get('Beyan_Yeri', '---'))
+                    add_comp("Beyan Tarihi", b_tarihi, data.get('Beyan_Tarihi', '---'))
 
-                    # Validation - General
-                    check_str(v_gumruk, data['Varış Gümrük İdaresi'], "Varış Gümrük İdaresi")
-                    check_str(b_turu, data['Beyanname_Türü'], "Beyanname Türü")
-                    check_str(c_rejimi, data['Rejim_Kodu'], "Çıkış Rejimi")
-                    check_str(ref_no, data['Referans_Numarası'], "Referans Numarası")
-                    check_str(gonderici, data['Gönderici_Adı_Adresi_VergiNo'], "Gönderici Bilgileri")
-                    check_str(alici, data['Alıcı_Adı_Adresi'], "Alıcı Bilgileri")
-                    check_str(temsilci, data['Beyan_Sahibi_Temsilci'], "Beyan Sahibi/Temsilci")
-                    check_str(b_yeri, data['Beyan_Yeri'], "Beyan Yeri")
-                    check_str(b_tarihi, data['Beyan_Tarihi'], "Beyan Tarihi")
-                    
-                    # Validation - Tasima/Finans
-                    check_str(sevk_ulke, data['Sevk_Ülkesi_Adı_Kodu'], "Sevk Ülkesi")
-                    check_str(ticaret_ulke, data['Ticareti_Yapan_Ülke_Kodu'], "Ticareti Yapan Ülke")
-                    check_str(gidecek_ulke, data['Gideceği_Ülke_Kodu'], "Gideceği Ülke")
-                    check_str(ilk_varis_ulke, data['İlk_Varış_Ülkesi_Kodu'], "İlk Varış Ülkesi")
-                    check_str(tasima_araci, data['Taşıma_Aracı_Kimliği'], "Taşıma Aracı")
-                    check_str(konteyner, data['Konteyner_Kodu'], "Konteyner Kodu")
-                    check_str(teslim_sekli, data['Teslim_Şekli_Yeri'], "Teslim Şekli")
-                    check_str(tasima_sinir, data['Taşıma_Şekli_Sınır'], "Taşıma Şekli (Sınır)")
-                    check_str(tasima_dahili, data['Taşıma_Şekli_Dahili'], "Taşıma Şekli (Dahili)")
-                    check_str(yukleme_yeri, data['Boşaltma_Yeri'], "Yükleme Yeri")
-                    check_str(doviz, data['Döviz'], "Döviz")
-                    check_num(top_fatura, data['Toplam_Fatura_Değeri'], "Toplam Fatura Değeri")
-                    check_num(top_net, data['Toplam_Net_Ağırlık_KG'], "Toplam Net Ağırlık")
-                    check_num(top_brut, data['Toplam_Brüt_Ağırlık_KG'], "Toplam Brüt Ağırlık")
-                    check_str(odeme_sekli, data['Ödeme_Şekli'], "Ödeme Şekli")
-                    check_str(banka, data['Banka_Adı_Şube'], "Banka Bilgisi")
-                    check_str(iban, data['IBAN'], "IBAN")
-                    check_str(swift, data['SWIFT_Kodu'], "SWIFT Kodu")
+                    # Transport/finance
+                    add_comp("Sevk Ülkesi", sevk_ulke, data.get('Sevk_Ülkesi_Adı_Kodu', '---'))
+                    add_comp("Ticareti Yapan Ülke", ticaret_ulke, data.get('Ticareti_Yapan_Ülke_Kodu', '---'))
+                    add_comp("Gideceği Ülke", gidecek_ulke, data.get('Gideceği_Ülke_Kodu', '---'))
+                    add_comp("İlk Varış Ülkesi", ilk_varis_ulke, data.get('İlk_Varış_Ülkesi_Kodu', '---'))
+                    add_comp("Taşıma Aracı", tasima_araci, data.get('Taşıma_Aracı_Kimliği', '---'))
+                    add_comp("Konteyner", konteyner, data.get('Konteyner_Kodu', '---'))
+                    add_comp("Teslim Şekli", teslim_sekli, data.get('Teslim_Şekli_Yeri', '---'))
+                    add_comp("Döviz", doviz, data.get('Döviz', '---'))
+                    add_comp("Toplam Fatura Değeri", top_fatura, data.get('Toplam_Fatura_Değeri', '---'))
 
-                    # Validation - Items
+                    # Items and tax comparisons
                     for i in range(1, 4):
-                        check_str(st.session_state[f"gtip_{i}"], data[f'GTIP_Kodu_{i}'], f"Kalem {i}: GTİP")
-                        check_str(st.session_state[f"tanim_{i}"], data[f'Ürün_Tanımı_{i}'], f"Kalem {i}: Ürün Tanımı")
-                        check_str(st.session_state[f"mense_{i}"], data[f'Menşe_Ülke_Kodu_{i}'], f"Kalem {i}: Menşe Ülke")
-                        check_str(st.session_state[f"birim_{i}"], data[f'Tamamlayıcı_Ölçü_Birimi_{i}'], f"Kalem {i}: Tamamlayıcı Ölçü Birimi")
-                        check_str(st.session_state[f"ek_kod_{i}"], data[f'Ek_Belge_Kodu_{i}'], f"Kalem {i}: Ek Belge Kodu")
-                        check_str(st.session_state[f"ek_ref_{i}"], data[f'Ek_Belge_Referans_{i}'], f"Kalem {i}: Ek Belge Referansı")
-                        check_str(st.session_state[f"kap_cinsi_{i}"], data[f'Kap_Cinsi_{i}'], f"Kalem {i}: Kap Cinsi")
-                        check_num(st.session_state[f"kap_adet_{i}"], data[f'Kap_Adedi_{i}'], f"Kalem {i}: Kap Adedi")
-                        check_num(st.session_state[f"net_{i}"], data[f'Net_Ağırlık_KG_{i}'], f"Kalem {i}: Net Ağırlık")
-                        check_num(st.session_state[f"gross_{i}"], data[f'Brüt_Ağırlık_KG_{i}'], f"Kalem {i}: Brüt Ağırlık")
-                        check_num(st.session_state[f"fiyat_{i}"], data[f'Kalem_Fiyatı_{i}'], f"Kalem {i}: Kalem Fiyatı")
-                        
-                        # Vergi Hesaplamaları - Doğrudan oran sütunlarını kullanarak beklenen tutarları hesapla
-                        cif_val = float(data[f'CIF_Toplam_{i}'])
-                        gv_rate = float(data.get(f'GV_Orani_{i}', 0))
-                        otv_rate = float(data.get(f'ÖTV_Orani_{i}', 0))
-                        kdv_rate = float(data.get(f'KDV_Orani_{i}', 0))
-                        
-                        # Kümülatif matrah mantığına göre beklenen tutarlar
-                        expected_gv = cif_val * (gv_rate / 100)
-                        
-                        otv_matrah = cif_val + expected_gv
-                        expected_otv = otv_matrah * (otv_rate / 100)
-                        
-                        kdv_matrah = otv_matrah + expected_otv
-                        expected_kdv = kdv_matrah * (kdv_rate / 100)
-                        
-                        check_num(st.session_state[f"fob_{i}"], data[f'İstatistiki_Kıymet_FOB_{i}'], f"Kalem {i}: İstatistik Kıymet", tol=0.5)
-                        check_num(st.session_state[f"navlun_{i}"], data[f'Navlun_Tutari_{i}'], f"Kalem {i}: Navlun", tol=0.5)
-                        check_num(st.session_state[f"sigorta_{i}"], data[f'Sigorta_Tutari_{i}'], f"Kalem {i}: Sigorta", tol=0.5)
-                        check_num(st.session_state[f"cif_{i}"], cif_val, f"Kalem {i}: Matrah (CIF)", tol=0.5)
-                        check_num(st.session_state[f"gv_{i}"], expected_gv, f"Kalem {i}: Gümrük Vergisi", tol=0.5)
-                        check_num(st.session_state[f"otv_{i}"], expected_otv, f"Kalem {i}: ÖTV", tol=0.5)
-                        check_num(st.session_state[f"kdv_{i}"], expected_kdv, f"Kalem {i}: KDV", tol=0.5)
-                        check_num(st.session_state[f"v_toplam_{i}"], data[f'Vergiler_Toplami_{i}'], f"Kalem {i}: Vergiler Toplamı", tol=0.5)
+                        add_comp(f"Kalem {i} - Ürün Tanımı", st.session_state.get(f"tanim_{i}"), data.get(f'Ürün_Tanımı_{i}', '---'))
+                        add_comp(f"Kalem {i} - GTİP", st.session_state.get(f"gtip_{i}"), data.get(f'GTIP_Kodu_{i}', '---'))
+                        add_comp(f"Kalem {i} - Net Ağırlık", st.session_state.get(f"net_{i}"), data.get(f'Net_Ağırlık_KG_{i}', '---'))
+                        add_comp(f"Kalem {i} - Brüt Ağırlık", st.session_state.get(f"gross_{i}"), data.get(f'Brüt_Ağırlık_KG_{i}', '---'))
+                        add_comp(f"Kalem {i} - Kalem Fiyatı", st.session_state.get(f"fiyat_{i}"), data.get(f'Kalem_Fiyatı_{i}', '---'))
+                        # Show system-calculated expected tax values as info in comparison
+                        try:
+                            cif_val = float(data.get(f'CIF_Toplam_{i}', 0))
+                            gv_rate = float(data.get(f'GV_Orani_{i}', 0))
+                            otv_rate = float(data.get(f'ÖTV_Orani_{i}', 0))
+                            kdv_rate = float(data.get(f'KDV_Orani_{i}', 0))
+                            expected_gv = cif_val * (gv_rate / 100)
+                            otv_matrah = cif_val + expected_gv
+                            expected_otv = otv_matrah * (otv_rate / 100)
+                            kdv_matrah = otv_matrah + expected_otv
+                            expected_kdv = kdv_matrah * (kdv_rate / 100)
+                        except Exception:
+                            expected_gv = expected_otv = expected_kdv = '---'
 
-                    # Hata olsa bile beyanname sisteme kaydedilsin
+                        add_comp(f"Kalem {i} - Sistem GV (Beklenen)", st.session_state.get(f"gv_{i}"), expected_gv)
+                        add_comp(f"Kalem {i} - Sistem ÖTV (Beklenen)", st.session_state.get(f"otv_{i}"), expected_otv)
+                        add_comp(f"Kalem {i} - Sistem KDV (Beklenen)", st.session_state.get(f"kdv_{i}"), expected_kdv)
+
+                    # Show neutral confirmation and comparison table (no correct/incorrect labels)
                     st.balloons()
+                    st.info("Beyanname kaydedildi. Aşağıda sizin girdiğiniz değerler ve sistemdeki beklenen değerler listelenmiştir.")
+                    comp_df = pd.DataFrame(comparisons)
+                    st.dataframe(comp_df, use_container_width=True)
+
+                    # Log submission (kept as success True so it appears in akademisyen raporlarında)
                     odev_log_name = data.get('Ödev_No', st.session_state.get('current_odev', '1'))
-                    
-                    if not errors:
-                        st.success("🎊 TESCİL BAŞARILI! Beyanname BİLGE sistemine başarıyla kaydedildi. (Başarı Oranı: %100)")
-                        log_attempt(data['Öğrenci_Numarası'], data['Öğrenci_Ad_Soyad'], True, [], odev_log_name)
-                    else:
-                        st.success(f"✅ Beyanname Sisteme Kaydedildi! ({len(errors)} uyarı bulunmaktadır)")
-                        with st.expander(f"⚠️ Uyarı Detaylarını Gör ({len(errors)} hata)"):
-                            for err in errors:
-                                st.write(f"⚠️ {err}")
-                        log_attempt(data['Öğrenci_Numarası'], data['Öğrenci_Ad_Soyad'], True, errors, odev_log_name)
+                    log_attempt(data['Öğrenci_Numarası'], data['Öğrenci_Ad_Soyad'], True, [], odev_log_name)
 
 elif page == "Akademisyen Paneli":
     st.title("📽️ Öğretim Üyesi Yönetim Paneli")
